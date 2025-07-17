@@ -1,0 +1,24 @@
+{
+  "family": "build-your-own-radar",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::394998986889:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "build-your-own-radar",
+      "image": "394998986889.dkr.ecr.us-east-1.amazonaws.com/build-your-own-radar:v1.1.6",
+      "memory": 512,
+      "cpu": 256,
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 80,
+          "hostPort": 80,
+          "protocol": "tcp"
+        }
+      ]
+    }
+  ]
+}
