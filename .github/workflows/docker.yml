@@ -1,4 +1,4 @@
-name: Deploy to Amazon ECS
+name: Build, Push Docker Image to ECR, and Deploy to ECS
 
 on:
   push:
@@ -6,16 +6,16 @@ on:
       - main
 
 env:
-  AWS_REGION: us-east-1
-  ECR_REPOSITORY: build-your-own-radar
-  ECS_SERVICE: build-your-own-radar-service-vxz5o9wv
-  ECS_CLUSTER: build-your-own-radar-cluster
-  ECS_TASK_DEFINITION: build-your-own-radar
-  CONTAINER_NAME: build-your-own-radar
+  AWS_REGION: ${{ secrets.AWS_REGION }}                # AWS region
+  ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPO_NAME }}      # ECR repository name
+  ECS_SERVICE: ${{ secrets.MY_ECS_SERVICE }}            # ECS service name
+  ECS_CLUSTER: ${{ secrets.MY_ECS_CLUSTER }}            # ECS cluster name
+  ECS_TASK_DEFINITION: ecs-task-definition.json        # Correct path to ECS task definition file
+  CONTAINER_NAME: ${{ secrets.MY_CONTAINER_NAME }}      # Container name in ECS task definition
 
 jobs:
   deploy:
-    name: Deploy
+    name: Deploy to Amazon ECS
     runs-on: ubuntu-latest
     environment: production
 
@@ -30,7 +30,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Login to Amazon ECR
+      - name: Log in to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
         with:
@@ -41,17 +41,19 @@ jobs:
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_TAG_LATEST: latest
+          IMAGE_TAG_SHA: sha-${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_LATEST -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_LATEST
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA" >> $GITHUB_OUTPUT
 
-      - name: Fill in the new image ID in the Amazon ECS task definition
+      - name: Fill in the new image ID in the ECS task definition
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@c804dfbdd57f713b6c079302a4c01db7017a36fc
         with:
-          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          task-definition: ecs-task-definition.json  # Correct path to the ECS task definition file
           container-name: ${{ env.CONTAINER_NAME }}
           image: ${{ steps.build-image.outputs.image }}
 
@@ -62,4 +64,3 @@ jobs:
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
-          stability-timeout: 900  # Increased wait time to 15 minutes
