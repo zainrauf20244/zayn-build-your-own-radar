@@ -27,7 +27,7 @@ RUN npm ci
 COPY . ./
 
 # Copy the CSV file into the container
-COPY ./zayn-techradar\ -\ Sheet.csv /opt/build-your-own-radar/files/zayn-techradar-Sheet.csv
+COPY ./zayn-techradar-Sheet.csv /opt/build-your-own-radar/files/zayn-techradar-Sheet.csv
 
 # Override the parent image's entrypoint
 ENTRYPOINT []
