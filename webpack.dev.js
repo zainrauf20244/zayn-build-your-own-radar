@@ -3,6 +3,7 @@ const webpack = require('webpack')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const postcssPresetEnv = require('postcss-preset-env')
 const cssnano = require('cssnano')
+const CopyPlugin = require('copy-webpack-plugin') // <-- Add this line
 
 const common = require('./webpack.common.js')
 const config = require('./src/config')
@@ -68,6 +69,11 @@ module.exports = merge(common, {
   plugins: [
     new webpack.DefinePlugin({
       'process.env.ENVIRONMENT': JSON.stringify('development'),
+    }),
+    new CopyPlugin({
+      patterns: [
+        { from: 'zayn-techradar-Sheet.csv', to: 'zayn-techradar-Sheet.csv' },
+      ],
     }),
   ],
   devtool: 'source-map',

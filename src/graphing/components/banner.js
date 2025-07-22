@@ -9,11 +9,18 @@ function renderBanner(renderFullRadar) {
     const documentTitle = document.title[0].toUpperCase() + document.title.slice(1)
 
     document.title = documentTitle
-    d3.select('.hero-banner__wrapper').append('p').classed('hero-banner__subtitle-text', true).text(document.title)
+    // Remove previous subtitle banners before appending a new one
+    d3.selectAll('.hero-banner__subtitle-text').remove();
+    d3.select('.hero-banner__wrapper')
+      .append('p')
+      .classed('hero-banner__subtitle-text', true)
+      .text(document.title)
     d3.select('.hero-banner__title-text').on('click', renderFullRadar)
 
     addPdfCoverTitle(documentTitle)
   } else {
+    // Remove previous header banners before inserting a new one
+    d3.selectAll('header').remove();
     const header = d3.select('body').insert('header', '#radar')
     header
       .append('div')

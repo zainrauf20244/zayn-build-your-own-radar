@@ -1,4 +1,7 @@
 function renderButtons(radarFooter) {
+  // Remove any existing buttons in the footer before adding new ones
+  radarFooter.selectAll('.buttons').remove();
+
   const buttonsRow = radarFooter.append('div').classed('buttons', true)
 
   buttonsRow

@@ -29,6 +29,8 @@ const { toRadian } = require('../util/mathUtils')
 
 const MIN_BLIP_WIDTH = 12
 const ANIMATION_DURATION = 1000
+const RING_OPTIONS = ['All', 'Hold', 'Assess', 'Trial', 'Adopt'];
+let selectedRing = 'All';
 
 const Radar = function (size, radar) {
   const CENTER = size / 2
@@ -762,77 +764,161 @@ const Radar = function (size, radar) {
     })
   }
 
+  // Add ring filter dropdown at the top
+  function addRingDropdown() {
+    let container = d3.select('main .graph-header');
+    if (container.empty()) {
+      container = d3.select('body').insert('div', ':first-child').attr('class', 'graph-header');
+    }
+    let dropdownDiv = container.select('.ring-filter-dropdown');
+    if (!dropdownDiv.empty()) dropdownDiv.remove();
+    dropdownDiv = container.insert('div', ':first-child').attr('class', 'ring-filter-dropdown').style('margin', '16px 0');
+    dropdownDiv.append('label')
+      .attr('for', 'ring-filter-select')
+      .style('margin-right', '8px')
+      .text('Filter by ring:');
+    const select = dropdownDiv.append('select')
+      .attr('id', 'ring-filter-select')
+      .style('padding', '4px 8px')
+      .on('change', function() {
+        selectedRing = this.value;
+        rerenderRadar();
+      });
+    select.selectAll('option')
+      .data(RING_OPTIONS)
+      .enter()
+      .append('option')
+      .attr('value', d => d)
+      .property('selected', d => d === selectedRing)
+      .text(d => d);
+  }
+
+  // Helper to filter blips by selected ring
+  function filterBlipsByRing(quadrants) {
+    if (selectedRing === 'All') return quadrants;
+    // Deep clone quadrants and filter blips
+    return quadrants.map(q => {
+      const newQuadrant = Object.assign(Object.create(Object.getPrototypeOf(q.quadrant)), q.quadrant);
+      newQuadrant.blips = function() {
+        return q.quadrant.blips().filter(blip => blip.ring().name().toLowerCase() === selectedRing.toLowerCase());
+      };
+      return { ...q, quadrant: newQuadrant };
+    });
+  }
+
+  // Helper to get only the selected ring as an array (for rendering)
+  function getSelectedRingArray(rings) {
+    if (selectedRing === 'All') return rings;
+    return rings.filter(r => r.name().toLowerCase() === selectedRing.toLowerCase());
+  }
+
+  // Rerender radar with filtered blips
+  function rerenderRadar() {
+    d3.selectAll('.banner').remove();
+    d3.selectAll('header .banner').remove();
+    d3.selectAll('body .banner').remove();
+    d3.select('#radar').selectAll('*').remove();
+    self.plot();
+  }
+
   self.plot = function () {
-    var rings, quadrants, alternatives, currentSheet
+    // Aggressively remove all possible banners before rendering a new one
+    d3.selectAll('.banner').remove();
+    d3.selectAll('header .banner').remove();
+    d3.selectAll('body .banner').remove();
 
-    rings = radar.rings()
-    quadrants = radar.quadrants()
-    alternatives = radar.getAlternatives()
-    currentSheet = radar.getCurrentSheet()
+    console.log('About to render banner');
+    renderBanner(renderFullRadar);
+    console.log('Banner rendered');
 
-    const radarHeader = d3.select('main .graph-header')
-    const radarFooter = d3.select('main .graph-footer')
+    var rings, quadrants, alternatives, currentSheet;
+    rings = radar.rings();
+    quadrants = radar.quadrants();
+    alternatives = radar.getAlternatives();
+    currentSheet = radar.getCurrentSheet();
 
-    renderBanner(renderFullRadar)
+    // Remove existing quadrant navigation and tables before re-rendering
+    d3.select('.quadrant-subnav').remove();
+    d3.selectAll('.quadrant-table__container').remove();
+    d3.selectAll('.quadrant-table').remove();
+    // Remove existing search bar before rendering a new one
+    d3.selectAll('.search-container').remove();
+    // Remove existing banner before rendering a new one
+    d3.selectAll('.banner').remove();
+
+    const radarHeader = d3.select('main .graph-header');
+    const radarFooter = d3.select('main .graph-footer');
+
+    addRingDropdown();
+    // Filter quadrants by selected ring
+    const filteredQuadrants = filterBlipsByRing(quadrants);
+    // Only use the selected ring for rendering if not 'All'
+    const filteredRings = getSelectedRingArray(rings);
+
+    renderBanner(renderFullRadar);
 
     if (featureToggles.UIRefresh2022) {
-      renderQuadrantSubnav(radarHeader, quadrants, renderFullRadar)
-      renderSearch(radarHeader, quadrants)
-      renderAlternativeRadars(radarFooter, alternatives, currentSheet)
-      renderQuadrantTables(quadrants, rings)
-      renderButtons(radarFooter)
+      renderQuadrantSubnav(radarHeader, filteredQuadrants, renderFullRadar);
+      renderSearch(radarHeader, filteredQuadrants);
+      renderAlternativeRadars(radarFooter, alternatives, currentSheet);
+      renderQuadrantTables(filteredQuadrants, filteredRings);
+      // Remove existing button groups before rendering new ones
+      d3.selectAll('.buttons-group').remove();
+      renderButtons(radarFooter);
 
-      const landingPageElements = document.querySelectorAll('main .home-page')
+      const landingPageElements = document.querySelectorAll('main .home-page');
       landingPageElements.forEach((elem) => {
-        elem.style.display = 'none'
-      })
+        elem.style.display = 'none';
+      });
     } else {
-      plotRadarHeader()
-      plotRadarFooter()
+      plotRadarHeader();
+      plotRadarFooter();
       if (alternatives.length) {
-        plotAlternativeRadars(alternatives, currentSheet)
+        plotAlternativeRadars(alternatives, currentSheet);
       }
-      plotQuadrantButtons(quadrants)
+      plotQuadrantButtons(filteredQuadrants);
     }
 
-    svg = radarElement.append('svg').call(tip)
+    svg = radarElement.append('svg').call(tip);
 
     if (featureToggles.UIRefresh2022) {
-      const legendHeight = 40
-      radarElement.style('height', size + legendHeight + 'px')
-      svg.attr('id', 'radar-plot').attr('width', size).attr('height', size)
+      const legendHeight = 40;
+      radarElement.style('height', size + legendHeight + 'px');
+      svg.attr('id', 'radar-plot').attr('width', size).attr('height', size);
     } else {
-      radarElement.style('height', size + 14 + 'px')
+      radarElement.style('height', size + 14 + 'px');
       svg
         .attr('id', 'radar-plot')
         .attr('width', size)
-        .attr('height', size + 14)
+        .attr('height', size + 14);
     }
 
-    _.each(quadrants, function (quadrant) {
-      let quadrantGroup
+    _.each(filteredQuadrants, function (quadrant) {
+      let quadrantGroup;
       if (featureToggles.UIRefresh2022) {
-        quadrantGroup = renderRadarQuadrants(size, svg, quadrant, rings, ringCalculator, tip)
-        plotLines(quadrantGroup, quadrant)
-        const ringTextGroup = quadrantGroup.append('g')
-        plotRingNames(ringTextGroup, rings, quadrant)
-        plotRadarBlips(quadrantGroup, rings, quadrant, tip)
-        renderMobileView(quadrant)
-        addQuadrantNameInPdfView(quadrant.order, quadrant.quadrant.name())
+        // If only one ring is selected, use full radius for arc and blips
+        const isSingleRing = filteredRings.length === 1;
+        quadrantGroup = renderRadarQuadrants(size, svg, quadrant, filteredRings, ringCalculator, tip, isSingleRing);
+        plotLines(quadrantGroup, quadrant);
+        const ringTextGroup = quadrantGroup.append('g');
+        plotRingNames(ringTextGroup, filteredRings, quadrant);
+        plotRadarBlips(quadrantGroup, filteredRings, quadrant, tip, isSingleRing);
+        renderMobileView(quadrant);
+        addQuadrantNameInPdfView(quadrant.order, quadrant.quadrant.name());
       } else {
-        quadrantGroup = plotQuadrant(rings, quadrant)
-        plotLines(quadrantGroup, quadrant)
-        plotTexts(quadrantGroup, rings, quadrant)
-        plotBlips(quadrantGroup, rings, quadrant)
+        quadrantGroup = plotQuadrant(filteredRings, quadrant);
+        plotLines(quadrantGroup, quadrant);
+        plotTexts(quadrantGroup, filteredRings, quadrant);
+        plotBlips(quadrantGroup, filteredRings, quadrant);
       }
-    })
+    });
 
     if (featureToggles.UIRefresh2022) {
-      renderRadarLegends(radarElement, hasMovementData(quadrants))
-      hideTooltipOnScroll(tip)
-      addRadarLinkInPdfView()
+      renderRadarLegends(radarElement, hasMovementData(filteredQuadrants));
+      hideTooltipOnScroll(tip);
+      addRadarLinkInPdfView();
     }
-  }
+  };
 
   function hasMovementData(quadrants) {
     for (var quadrantWrapper of quadrants) {

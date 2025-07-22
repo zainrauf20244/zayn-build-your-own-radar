@@ -352,7 +352,7 @@ function plotGroupBlips(ringBlips, ring, quadrantOrder, parentElement, quadrantW
   })
 }
 
-const plotRadarBlips = function (parentElement, rings, quadrantWrapper, tooltip) {
+const plotRadarBlips = function (parentElement, rings, quadrantWrapper, tooltip, isSingleRing) {
   let blips, quadrant, startAngle, quadrantOrder
 
   quadrant = quadrantWrapper.quadrant
@@ -369,12 +369,18 @@ const plotRadarBlips = function (parentElement, rings, quadrantWrapper, tooltip)
       return
     }
 
-    const offset = 10
-    const minRadius = getRingRadius(i) + offset
-    const maxRadius = getRingRadius(i + 1) - offset
+    let minRadius, maxRadius;
+    if (isSingleRing) {
+      minRadius = 0;
+      maxRadius = graphConfig.quadrantWidth;
+    } else {
+      const offset = 10;
+      minRadius = getRingRadius(i) + offset;
+      maxRadius = getRingRadius(i + 1) - offset;
+    }
     let allBlipCoordsInRing = []
 
-    if (ringBlips.length > graphConfig.maxBlipsInRings[i]) {
+    if (!isSingleRing && ringBlips.length > graphConfig.maxBlipsInRings[i]) {
       plotGroupBlips(ringBlips, ring, quadrantOrder, parentElement, quadrantWrapper, tooltip)
       return
     }

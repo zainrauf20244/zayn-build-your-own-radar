@@ -315,7 +315,7 @@ function renderRadarQuadrantName(quadrant, parentGroup, tip) {
   ctaArrow.attr('transform', `translate(${ctaArrowXOffset}, ${ctaArrowYOffset})`)
 }
 
-function renderRadarQuadrants(size, svg, quadrant, rings, ringCalculator, tip) {
+function renderRadarQuadrants(size, svg, quadrant, rings, ringCalculator, tip, isSingleRing) {
   const quadrantGroup = svg
     .append('g')
     .attr('class', 'quadrant-group quadrant-group-' + quadrant.order)
@@ -355,13 +355,20 @@ function renderRadarQuadrants(size, svg, quadrant, rings, ringCalculator, tip) {
     .style('pointer-events', 'none')
 
   rings.forEach(function (ring, i) {
-    const arc = d3
-      .arc()
-      .innerRadius(ringCalculator.getRingRadius(i))
-      .outerRadius(ringCalculator.getRingRadius(i + 1))
-      .startAngle(toRadian(quadrant.startAngle))
-      .endAngle(toRadian(quadrant.startAngle - 90))
-
+    let arc;
+    if (isSingleRing) {
+      arc = d3.arc()
+        .innerRadius(0)
+        .outerRadius(quadrantWidth)
+        .startAngle(toRadian(quadrant.startAngle))
+        .endAngle(toRadian(quadrant.startAngle - 90));
+    } else {
+      arc = d3.arc()
+        .innerRadius(ringCalculator.getRingRadius(i))
+        .outerRadius(ringCalculator.getRingRadius(i + 1))
+        .startAngle(toRadian(quadrant.startAngle))
+        .endAngle(toRadian(quadrant.startAngle - 90));
+    }
     quadrantGroup
       .append('path')
       .attr('d', arc)
