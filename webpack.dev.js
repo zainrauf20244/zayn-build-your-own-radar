@@ -73,6 +73,9 @@ module.exports = merge(common, {
     new CopyPlugin({
       patterns: [
         { from: 'zayn-techradar-Sheet.csv', to: 'zayn-techradar-Sheet.csv' },
+        { from: 'src/images/logo_main.png', to: 'images/logo_main.png' },
+        { from: 'src/images/banner1.jpeg', to: 'images/banner1.jpeg' },
+        { from: 'src/images/banner1.jpg', to: 'images/banner1.jpg' },
       ],
     }),
   ],

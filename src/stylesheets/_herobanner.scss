@@ -4,44 +4,30 @@
 @if $UIRefresh2022 {
   .hero-banner {
     height: $tabletBannerHeight;
-    background-color: $amethyst;
-    background-image: url('/images/banner-image-mobile.jpg');
-    background-size: contain;
+    background-image: url('/images/banner1.jpeg');
+    background-size: cover;
     background-repeat: no-repeat;
-    background-position: right;
-    color: $white;
+    background-position: center;
+    color: #fff;
     display: flex;
     align-items: center;
+    justify-content: flex-start;
     margin: 0 !important;
 
-    @include media-query-large {
-      background-image: url('/images/banner-image-mobile.jpg');
+    .hero-banner__wrapper {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      padding-left: 12vw;
     }
 
-    @include media-query-xlarge {
-      background-image: url('/images/banner-image-desktop.jpg');
-      height: $bannerHeight;
-      background-size: cover;
-    }
-
-    &__wrapper {
-      margin: auto;
-      width: 90%;
-
-      @include layout-margin(1, $screen-small);
-      @include layout-margin(1, $screen-medium);
-      @include layout-margin(1, $screen-large);
-      @include layout-margin(1, $screen-xlarge);
-      @include layout-margin(1, $screen-xxlarge);
-      @include layout-margin(1, $screen-xxxlarge);
-    }
-
-    &__title-text {
-      width: fit-content;
+    .hero-banner__title-text {
+      font-size: 4rem;
+      font-weight: bold;
+      color: #fff;
       text-align: left;
-      text-transform: none;
-      letter-spacing: 0;
-      cursor: pointer;
     }
 
     &__subtitle-text {

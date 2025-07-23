@@ -3,6 +3,7 @@ const webpack = require('webpack')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const postcssPresetEnv = require('postcss-preset-env')
 const cssnano = require('cssnano')
+const CopyPlugin = require('copy-webpack-plugin')
 
 const common = require('./webpack.common.js')
 const config = require('./src/config')
@@ -69,6 +70,13 @@ module.exports = merge(common, {
     new webpack.NoEmitOnErrorsPlugin(),
     new webpack.DefinePlugin({
       'process.env.ENVIRONMENT': JSON.stringify('production'),
+    }),
+    new CopyPlugin({
+      patterns: [
+        { from: 'src/images/logo_main.png', to: 'images/logo_main.png' },
+        { from: 'src/images/banner1.jpeg', to: 'images/banner1.jpeg' },
+        { from: 'src/images/banner1.jpg', to: 'images/banner1.jpg' },
+      ],
     }),
   ],
 })
