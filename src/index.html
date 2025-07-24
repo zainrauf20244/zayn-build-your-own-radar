@@ -10,6 +10,33 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bitter:wght@700&display=swap" rel="stylesheet" />
+  <style>
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    main {
+      flex: 1;
+    }
+
+    footer {
+      width: 100%;
+      text-align: center;
+      padding: 24px 0 16px 0;
+      font-size: 1.2rem;
+      color: #333;
+      letter-spacing: 1px;
+      background: #fff;
+      box-shadow: 0 -1px 8px rgba(0, 0, 0, 0.04);
+    }
+  </style>
 </head>
 
 <body>
@@ -34,11 +61,6 @@
       </div>
     </div>
     <div class="helper-description home-page">
-      <p>
-        Once you've <a href="https://www.dubizzle.com/radar/byor">created your Radar</a> you can use this service
-        to generate an interactive version of your Technology Radar. Not sure how?
-        <a href="https://www.dubizzle.com/radar/byor">Read this first.</a>
-      </p>
       <span class="loader-text">
         <span class="loader-text__title">Building your radar...</span>
         <p>Your Technology Radar will be available in just a few seconds</p>
@@ -59,7 +81,7 @@
       <form id="byor-form-submit" method="get">
         <input type="text" name="documentId" id="document-input"
           placeholder="e.g. https://docs.google.com/spreadsheets/d/<sheetid> or hosted CSV/JSON file" required="" />
-        <input type="submit" value="Build my radar" />
+        <input type="submit" value="Build Dubizzle Radar" />
         <a href="https://www.dubizzle.com/radar/byor#guide">Need help?</a>
       </form>
     </div>
@@ -69,6 +91,18 @@
         There are no blips on this quadrant, please check your Google sheet/CSV/JSON file once.
       </p>
     </div>
+    <footer style="
+      width:100%;
+      text-align:center;
+      padding:24px 0 16px 0;
+      margin-top:100px;
+      font-size:1.2rem;
+      color:#333;
+      letter-spacing:1px;
+      background:#fff;
+      box-shadow: 0 -1px 8px rgba(0,0,0,0.04);">
+      Powered by <strong>Dubizzle Group BIT</strong>
+    </footer>
     <div class="all-quadrants-mobile show-all-quadrants-mobile"></div>
     <div class="graph-footer"></div>
   </main>
@@ -78,10 +112,6 @@
       Technology Radar, <span class="footer-date">dd/mm/yyyy</span> | <span class="footer-page-number">00</span>
     </div>
   </div>
-  <!-- Add new footer -->
-  <footer style="width:100%;text-align:center;padding:24px 0 16px 0;font-size:1.2rem;color:#333;letter-spacing:1px;">
-    Powered by <strong>Dubizzle-Group BIT</strong>
-  </footer>
 </body>
 
 </html>
